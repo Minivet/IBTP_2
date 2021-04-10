@@ -258,3 +258,4 @@ for(i in 1:length(table_bld_types)) {
 
 filename <- paste("age_type_unweighteds_count_",geog_label,"_2019.csv",sep="")
 write.csv(results,filename)
+
