@@ -2,9 +2,9 @@ source("library.R")
 
 ca_households <- read.csv("psam_h06.csv",header=TRUE)
 # 5-year household PUMS sample 2015-2019
-# (csv is too large for repository, download yourself)
-# Documentation https://www.census.gov/programs-surveys/acs/microdata.html
-# Download https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/csv_hca.zip
+# (csv is too large for repository, download yourself into folder)
+# Documentation: https://www.census.gov/programs-surveys/acs/microdata.html
+# Download and unzip: https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/csv_hca.zip
 
 # Reduce dataset to Public Use Microdata Areas (PUMAs) of interest
 # California PUMAs list: https://www.census.gov/geographies/reference-maps/2010/geo/2010-pumas/california.html
@@ -55,7 +55,7 @@ households_set %<>% mutate(bldage = case_when(
 table_bld_ages<- c("Pre-1950","1950-1969",
                    "1970-1989", "1990-2004", "2005-2019")
 
-# add tenure type, collapse owned with mortgage / owned free and clear 
+# add tenure type, collapse owned into one category (from free and clear / mortgage) 
 households_set %<>% mutate(tenure = case_when(
   TEN %in% 1:2 ~ "Owned",
   TEN == 3 ~ "Rented",
@@ -69,7 +69,7 @@ resultsblank <- cbind(row,row,row,row,row)
 colnames(resultsblank) <- table_bld_ages
 rownames(resultsblank) <- table_bld_types
 
-#compute 5X6 of weighted median income in each cell
+#compute 5X6 table of weighted median income in each cell
 
 results <- resultsblank
 
@@ -82,10 +82,10 @@ for(i in 1:length(table_bld_types)) {
                                  households_set$bldage == 
                                       table_bld_ages[j] &
                                !is.na(households_set$Adjusted_Income),]
-  if(sum(iter_set$WGTP>0,na.rm=TRUE)<19) { #write * in cells where household sample size <10
+  if(sum(iter_set$WGTP>0,na.rm=TRUE)<10) { #write * in if the cell has  household sample size <10
    results[i,j] <- "*" 
   } else {
-    results[i,j] <- weighted.median(iter_set$Adjusted_Income,iter_set$WGTP)
+    results[i,j] <- weighted.median(iter_set$Adjusted_Income,iter_set$WGTP) #add weighted median value to cell
     }
   }
   }
@@ -147,9 +147,11 @@ write.csv(results,filename)
 
 
 
-# output the number of households Census estiamted in each cell
-# (WGTP = households weights)
+# output the number of households Census estimated in each cell
 # that were available for median income analysis
+# (WGTP = households weights; people in group quarters like dorms, nursing 
+# homes have WGTP 0 since designated as non-households)
+
 
 results <- resultsblank
 
@@ -249,12 +251,10 @@ for(i in 1:length(table_bld_types)) {
                                  households_set$bldage == 
                                  table_bld_ages[j] &
                                  !is.na(households_set$Adjusted_Income) &
-                                 households_set$WGTP > 0,] #make sure to discard WGTP==0 which denotes group quarters resident or vacant unit, neither called a household
+                                 households_set$WGTP > 0,] #discard WGTP==0 group quarters not in median analysis
     results[i,j] <- nrow(iter_set)
   }
 }
 
 filename <- paste("age_type_unweighteds_count_",geog_label,"_2019.csv",sep="")
 write.csv(results,filename)
-
-
