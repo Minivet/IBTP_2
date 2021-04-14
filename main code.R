@@ -1,3 +1,5 @@
+# Make sure to download library.R from repository to install all dependencies
+
 source("library.R")
 
 ca_households <- read.csv("psam_h06.csv",header=TRUE)
