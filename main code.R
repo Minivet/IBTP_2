@@ -1,5 +1,5 @@
 # Make sure to download library.R from repository to install all dependencies
-
+setwd("_______") #replace ___ with directory you downloaded repository into
 source("library.R")
 
 ca_households <- read.csv("psam_h06.csv",header=TRUE)
